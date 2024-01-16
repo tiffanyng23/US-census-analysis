@@ -38,16 +38,16 @@ ORDER BY state_population DESC LIMIT 5;
 -- California has the highest population out of all the states
 -- California has a much higher average county population compared to other high population states!
 -- California and Florida both have high median county populations
--- Texas has a MUCH lower average and median county population than California despite being the second most populated state!
+-- Texas has a MUCH lower average and median county population than California (and other top 5 states) despite being the second most populated state!
 
 
--- Does Texas have a much higher amount of counties than California, so the population is split over more counties?
+-- Does Texas have a much higher amount of counties than California, so the population is distributed over more counties?
 -- Number of counties in Texas vs. California:
 SELECT state_name, COUNT(county_name) FROM us_counties_2019
 WHERE state_name = 'California' OR state_name = 'Texas'
 GROUP BY state_name;
 -- Texas has 254 counties compared to 58 in California. 
--- Texas has a low mean and median county population compared to California due to having much more counties!
+-- Texas has a low mean and median county population compared to California due to having more counties!
 
 -- Why does Texas have more counties than California?
 -- Closer look at total area in Texas compared to California
@@ -102,7 +102,7 @@ SELECT ((cali_counties::numeric)/(us_counties))*100 FROM
 	WHERE state_name = 'California') AS cali,
 	(SELECT COUNT(county_name) AS us_counties FROM us_counties_2019
 	WHERE pop_est_2019 > (SELECT AVG(pop_est_2019) FROM us_counties_2019)) AS state;
--- 10% of the counties above the average US county population is in California.
+-- 10% of the counties above the average US county population are in California.
 -- California is contributing heavily to the skew in average county population compared to median county population in the US
 
 -- Look into state with the lowest average county population:
@@ -232,21 +232,18 @@ ORDER BY pop_density;
 -- Looking closer at components of population density: population and state area
 
 -- population in alaska compared to other states
-SELECT state_name, SUM(pop_est_2019) AS population FROM us_counties_2019
-GROUP BY state_name
-ORDER BY population;
+SELECT state_name, SUM(pop_est_2019) AS population, RANK() OVER(ORDER BY SUM(pop_est_2019)) FROM us_counties_2019
+GROUP BY state_name;
 -- Alaska has the 4th lowest population.
 
 -- Looking closer at Alaskan area compared to other states
-SELECT state_name, SUM(area_land + area_water) AS total_area FROM us_counties_2019
-GROUP BY state_name
-ORDER BY total_area DESC;
+SELECT state_name, SUM(area_land + area_water) AS total_area, RANK() OVER(ORDER BY SUM(area_land + area_water) DESC) FROM us_counties_2019
+GROUP BY state_name;
 -- Alaska has by far the largest total area!
 
 -- just land area:
-SELECT state_name, SUM(area_land) AS total_area FROM us_counties_2019
-GROUP BY state_name
-ORDER BY total_area DESC;
+SELECT state_name, SUM(area_land) AS total_area, RANK() OVER(ORDER BY SUM(area_land) DESC) FROM us_counties_2019
+GROUP BY state_name;
 -- Even when looking at just land area, Alaska still has a much higher area than the next state Texas.
 
 -- Looking closer at Alaska population and area compared to US population:
@@ -275,7 +272,7 @@ FROM
 	WHERE state_name = 'Alaska'
 	GROUP BY state_name),
 	(SELECT SUM(pop_est_2019) AS us_pop FROM us_counties_2019);
--- Alaska only has 0.2% of the population in the US!
+-- Alaska only has 0.2% of the population in the US while occupying 17.5% of the US total area!
 
 
 -- Looking at state with the highest population density
@@ -288,15 +285,13 @@ ORDER BY pop_density DESC;
 -- Even though New York has the top 4 highest density counties, New Jersey as a whole is more dense.
 
 -- Population of each state
-SELECT state_name, SUM(pop_est_2019) AS population FROM us_counties_2019
-GROUP BY state_name
-ORDER BY population DESC;
+SELECT state_name, SUM(pop_est_2019) AS population, RANK() OVER(ORDER BY SUM(pop_est_2019) DESC) FROM us_counties_2019
+GROUP BY state_name;
 -- New Jersey has the 11th highest population.
 
 -- Total area by state
-SELECT state_name, SUM(area_land) AS total_area FROM us_counties_2019
-GROUP BY state_name
-ORDER BY total_area;
+SELECT state_name, SUM(area_land) AS total_area, RANK() OVER(ORDER BY SUM(area_land)) FROM us_counties_2019
+GROUP BY state_name;
 -- New Jersey has the 6th lowest total area.
 -- Seems that the low total area compared to states with higher populations than New Jersey led to the highest population density.
 
@@ -319,7 +314,7 @@ FROM
 	GROUP BY state_name),
 	(SELECT SUM(pop_est_2019) AS us_pop FROM us_counties_2019);
 -- New Jersey has 2.7% of the population in the US.
--- Even though there are states with a higher population and smaller area, it seems that the higher populated states are larger in area!
+-- Even though there are states with a higher population or smaller area, it seems that the higher populated states are larger in area!
 
 
 
