@@ -318,7 +318,6 @@ FROM
 
 
 
-
 -- Takeaway points:
 -- California is the most populated state
 -- Texas has the second highest population by state 
@@ -337,4 +336,11 @@ FROM
 -- New Jersey has the highest population density
 	-- New Jersey has 0.23% of the total area in the US while having 2.7% of the population
 
+-- Table to export to create visualization:
+SELECT state_name, SUM(pop_est_2019) AS pop_2019, SUM(births_2019) AS births_2019, SUM(deaths_2019) AS deaths_2019, 
+SUM(international_migr_2019) AS international_migr_2019, SUM(domestic_migr_2019) AS domestic_migr_2019,
+SUM((pop_est_2019 - pop_est_2018)/(pop_est_2018::numeric)) AS one_year_growth_rate
+FROM us_counties_2019
+GROUP BY state_name
+ORDER BY state_name;
 
